@@ -36,19 +36,19 @@ reg [ROB_WIDTH:0]   reorder [31:0]; // Lowest bit as busy.
 
 wire issueEffective = issueFlag && (issueReg != 0);
 wire writeEffective = writeFlag && (writeReg != 0);
-wire writeLatest    = reorder[writeReg] == {1'b1, writeSrc};
+wire writeLatest    = reorder[writeReg] == {writeSrc, 1'b1};
 
 
 // Body part.
 always @(posedge clkIn) begin
     if (rstIn || clrIn) begin 
         if (rstIn) begin
-            integer j; generate
+            genvar j; generate
                 for (j = 0; j < 32; j = j + 1) data[j] <= 0;
             endgenerate
         end
 
-        integer i; generate
+        genvar i; generate
             for (i = 0; i < 32; i = i + 1) reorder[i] <= 0;
         endgenerate
 
@@ -60,7 +60,7 @@ always @(posedge clkIn) begin
         end
 
         if (issueEffective) begin
-            reorder[issueReg] <= {1'b1, issueROB};
+            reorder[issueReg] <= {issueROB, 1'b1};
         end
     end
 end
