@@ -29,14 +29,14 @@ module RegisterFile #(
     input wire  [REG_WIDTH-1:0] writeReg,
     input wire  [31:0]          writeData,
 );
-
 // Data part.
-reg [31:0] data[31:0];              // Core register data.
-reg [ROB_WIDTH:0] reorder [31:0];   // highest bit as dirty tag.
+
+reg [31:0]          data[31:0];     // Core register data.
+reg [ROB_WIDTH:0]   reorder [31:0]; // Lowest bit as busy.
 
 wire issueEffective = issueFlag && (issueReg != 0);
 wire writeEffective = writeFlag && (writeReg != 0);
-wire writeLatest    = busy[writeReg] && (reorder[writeReg] == writeSrc);
+wire writeLatest    = reorder[writeReg] == {1'b1, writeSrc};
 
 
 // Body part.
@@ -65,13 +65,15 @@ always @(posedge clkIn) begin
     end
 end
 
-// Output part.
-assign rs1Data      = data[rs1Flag];
-assign rs1Busy      = busy[rs1Flag];
-assign rs1Rename    = reorder[rs1Flag];
-assign rs2Data      = data[rs2Flag];
-assign rs2Busy      = busy[rs2Flag];
-assign rs2Rename    = reorder[rs2Flag];
 
+// Output part.
+
+assign rs1Data      = data[rs1Flag];
+assign rs1Busy      = reorder[rs1Flag][0];
+assign rs1Rename    = reorder[rs1Flag][ROB_WIDTH:1];
+
+assign rs2Data      = data[rs2Flag];
+assign rs2Busy      = reorder[rs2Flag][0];
+assign rs2Rename    = reorder[rs2Flag][ROB_WIDTH:1];
 
 endmodule
