@@ -1,14 +1,17 @@
 module InstructionCache (
+    // System
     input   wire        clkIn,
     input   wire        rstIn,
     input   wire        rdyIn,
 
-    input   wire [31:0] addrIn,
-    output  wire        hit,
-    output  wire [31:0] dataOut,
+    // Instruction fetch.
+    input   wire [31:0] addrIn, // pc address to be read.
+    output  wire        hit,    // Whether cache hit (data valid).
+    output  wire [31:0] dataOut,// Output data if hit.
 
+    // Instruction load.
     input   wire        wrEn,   // whether to write data into cache.
-    input   wire [31:0] data,   // data to be written into cache.
+    input   wire [31:0] data,   // data to loaded from RAM.
 );
 
 // 256 lines in total. Each line contains one command.
@@ -29,7 +32,7 @@ always @(posedge clkIn) begin
     if (rstIn) begin
         genvar i; generate
             for (i = 0; i < SIZE; i = i + 1) begin
-                mem[i]  <=  0;
+                cmd[i]  <=  0;
                 tag[i]  <=  0;
             end
         endgenerate
